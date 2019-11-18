@@ -173,6 +173,12 @@
                       <td>{{ item.credit }}</td>
                       <td>{{ item.Running_balance }}</td>
                     </tr>
+                    <tr>
+                      <td colspan="3">Total</td>
+                      <td>{{totalDeb}}</td>
+                      <td>{{totalCre}}</td>
+                      <td>{{total}}</td>
+                    </tr>
                   </tbody>
                 </v-simple-table>
               </template>
@@ -216,6 +222,9 @@
     data () {
         return {
           search: '',
+          totalDeb: 0,
+          totalCre: 0,
+          total: 0,
           activitesTemp: null,
           ref_: '',
           activites: null,
@@ -257,13 +266,10 @@
     async mounted () {
       this.initialize()
     },
-
     methods: {
       async initialize () {
         try {
           this.fournisseurs = (await this.axios.get('http://localhost:1337/fournisseur')).data;
-
-
         }
         catch(error) {
           this.message = "Erreur de connexion au serveur";
@@ -287,6 +293,20 @@
             return (new Date(e.date) >= dateD && new Date(e.date) <= dateF);
           });
 
+          var total = 0;
+          var totalCre = 0;
+          var totalDeb = 0;
+
+          this.activites.forEach(function (item) {
+            totalDeb = totalDeb + item.debit;
+            totalCre = totalCre + item.credit;
+            total = total + item.Running_balance;
+          });
+
+          this.total = total;
+          this.totalCre = totalCre;
+          this.totalDeb = totalDeb;
+
         }
       },filtreDate(){
         if( this.dateDebut != null && this.dateFin != null){
@@ -297,11 +317,25 @@
             return (new Date(e.date) >= dateD && new Date(e.date) <= dateF);
           });
 
+          var total = 0;
+          var totalCre = 0;
+          var totalDeb = 0;
+
+          this.activites.forEach(function (item) {
+            totalDeb = totalDeb + item.debit;
+            totalCre = totalCre + item.credit;
+            total = total + item.Running_balance;
+          });
+
+          this.total = total;
+          this.totalCre = totalCre;
+          this.totalDeb = totalDeb;
+
         }
       },
       async saveEntree(){
          try {
-          if(this.type == "Debit" ){
+          if(this.type == "Debit"){
 
               this.itemSelect.balance = parseInt(this.itemSelect.balance) + parseInt(this.amount);
 
@@ -326,7 +360,7 @@
             });
           }
 
-           this.activitesTemp = ( await this.axios.get('http://localhost:1337/activite/?fournisseur='+this.itemSelect.id)).data;
+           this.activitesTemp = ( await this.axios.get('http://localhost:1337/activite/?fournisseur='+this.itemSelect.id )).data;
 
            if( this.dateDebut != null && this.dateFin != null){
              var dateD = new Date(this.dateDebut);
@@ -338,6 +372,20 @@
 
            }
 
+           var total = 0;
+           var totalCre = 0;
+           var totalDeb = 0;
+
+           this.activites.forEach(function (item) {
+             totalDeb = totalDeb + item.debit;
+             totalCre = totalCre + item.credit;
+             total = total + item.Running_balance;
+           });
+
+           this.total = total;
+           this.totalCre = totalCre;
+           this.totalDeb = totalDeb;
+
            this.ref_ = "";
            this.amount = 0;
            this.narration = "";
@@ -347,8 +395,8 @@
            });
 
            this.message = "Entrées Inserées"
-        this.colorMessage = "success"
-        this.printMessage = true
+           this.colorMessage = "success"
+           this.printMessage = true
           
         }catch(error) {
           this.message = "Erreur de connexion au serveur"
@@ -356,7 +404,8 @@
           this.printMessage = true
           console.error(error);
         }
-      },imprimer(){
+      }, imprimer(){
+
       var vm = this
 
       var columns = ["Date", "Ref", "Narration", "Debit", "Credit", "Running_balance"];

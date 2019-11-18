@@ -124,7 +124,18 @@
             color="success"
             @click="groupBy()"
     >
-     Groupe
+     Grouper par Produit
+    </v-btn><v-btn
+            color="success"
+            @click="groupByCat()"
+    >
+      Groupe par Categorie
+    </v-btn>
+      <v-btn
+            color="success"
+            @click="initialize()"
+    >
+      Initialisation
     </v-btn>
             </template>
 
@@ -282,7 +293,35 @@
               return p.nom;
             }
           }
-      },groupBy(){
+      },groupByCat(){
+
+        let entreesFilteredTmp =  JSON.parse(JSON.stringify(this.entreesFiltered));
+        let entreesFilteredTemps = [];
+        let entreesFilteredTemps_ = [];
+
+        entreesFilteredTmp.forEach(function (item) {
+          if(entreesFilteredTemps_.includes(item.produit.categorie)){
+            let idx = null;
+            entreesFilteredTemps.forEach(function (j, index) {
+              if(j.produit.categorie == item.produit.categorie){
+                idx = index;
+              }
+            });
+
+            entreesFilteredTemps[idx].quantite = entreesFilteredTemps[idx].quantite + item.quantite;
+          }else{
+            entreesFilteredTemps_.push(item.produit.categorie);
+            item.createdAt = '-';
+            item.motif = '-';
+            item.produit.nom = '-';
+            item.produit.packetage = null;
+            entreesFilteredTemps.push(item);
+          }
+        })
+
+        this.entreesFiltered = entreesFilteredTemps;
+
+      }, groupBy(){
 
         let entreesFilteredTmp =  JSON.parse(JSON.stringify(this.entreesFiltered));
         let entreesFilteredTemps = [];

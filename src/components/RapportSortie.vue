@@ -120,6 +120,23 @@
                     >
                       Imprimer Rapport
                     </v-btn>
+        <v-btn
+                color="success"
+                @click="groupBy()"
+        >
+            Grouper par Produit
+        </v-btn><v-btn
+            color="success"
+            @click="groupByCat()"
+    >
+        Groupe par Categorie
+    </v-btn>
+        <v-btn
+                color="success"
+                @click="initialize()"
+        >
+            Initialisation
+        </v-btn>
             </template>
             <v-snackbar
               :color="colorMessage"
@@ -273,7 +290,63 @@
               return p.nom;
             }
           }
-      },exportPdf(){
+      },groupByCat(){
+
+            let sortiesFilteredTmp =  JSON.parse(JSON.stringify(this.sortiesFiltered));
+            let sortiesFilteredTemps = [];
+            let sortiesFilteredTemps_ = [];
+
+            sortiesFilteredTmp.forEach(function (item) {
+                if(sortiesFilteredTemps_.includes(item.produit.categorie)){
+                    let idx = null;
+                    sortiesFilteredTemps.forEach(function (j, index) {
+                        if(j.produit.categorie == item.produit.categorie){
+                            idx = index;
+                        }
+                    });
+
+                    sortiesFilteredTemps[idx].quantite = sortiesFilteredTemps[idx].quantite + item.quantite;
+                }else{
+                    sortiesFilteredTemps_.push(item.produit.categorie);
+                    item.createdAt = '-';
+                    item.motif = '-';
+                    item.produit.nom = '-';
+                    item.produit.packetage = null;
+                    sortiesFilteredTemps.push(item);
+                }
+            })
+
+            this.sortiesFiltered = sortiesFilteredTemps;
+
+        }, groupBy(){
+
+            let sortiesFilteredTmp =  JSON.parse(JSON.stringify(this.sortiesFiltered));
+            let sortiesFilteredTemps = [];
+            let sortiesFilteredTemps_ = [];
+
+
+
+            sortiesFilteredTmp.forEach(function (item) {
+                if(sortiesFilteredTemps_.includes(item.produit.id)){
+                    let idx = null;
+                    sortiesFilteredTemps.forEach(function (j, index) {
+                        if(j.produit.id == item.produit.id){
+                            idx = index;
+                        }
+                    });
+
+                    sortiesFilteredTemps[idx].quantite = sortiesFilteredTemps[idx].quantite + item.quantite;
+                }else{
+                    sortiesFilteredTemps_.push(item.produit.id);
+                    item.createdAt = '-';
+                    item.motif = '-';
+                    sortiesFilteredTemps.push(item);
+                }
+            })
+
+            this.sortiesFiltered = sortiesFilteredTemps;
+
+        },exportPdf(){
           var vm = this
           
           var columns = ["Date", "Produit", "Categorie", "Packetage", "Quantite", "Motif"]; 
@@ -281,7 +354,7 @@
           var rows = [];
 
           for(let e of vm.sortiesFiltered){
-              rows.push([moment(e.createdAt).format('D/MM/YYYY - h:mm:ss '), e.produit.nom, vm.getCatName(e.produit.categorie) , vm.getPackName(e.produit.packetage), e.quantite, e.motif])
+              rows.push([(e.createdAt == '-')? '-' : moment(e.createdAt).format('D/MM/YYYY - h:mm:ss '), e.produit.nom, vm.getCatName(e.produit.categorie) , vm.getPackName(e.produit.packetage), e.quantite, e.motif])
           }
 
           var title = 'Rapport des sorties';
